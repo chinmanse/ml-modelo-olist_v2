@@ -2,4 +2,3 @@ proyecto
 venv
 models
 *.pyc
-dataset_v4.csv
