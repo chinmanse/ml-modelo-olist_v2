@@ -1,0 +1,80 @@
+volumes:
+  kafka_data:
+  zookeeper_data:
+  zookeeper_log:
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.1
+    container_name: abn_kafka_zookeeper
+    env_file:
+      - compose/envs/zookeeper.env
+    ports: 
+      - "2181:2181"
+    restart: unless-stopped
+    networks:
+      - kafka_net
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_log:/var/lib/zookeeper/log
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.1
+    container_name: abn_kafka
+    depends_on:
+      - zookeeper
+    env_file:
+      - compose/envs/kafka.env
+    ports:
+      - "9092:9092"
+    networks:
+      - kafka_net
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+
+  ml_producer:
+    image: ml_worker
+    container_name: ml_producer
+    command: ["python", "main.py"]
+    env_file:
+      - compose/envs/worker.env
+    volumes:
+      - ./abrenet_scheduler:/app
+      - ./api:/app/api:or
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - kafka
+      - mongo
+    restart: unless-stopped
+    networks:
+      - kafka_net
+      - backend_abrenet
+
+  ml_worker:
+    image: ml_worker
+    container_name: ml_worker
+    command: ["python", "main.py"]
+    env_file:
+      - compose/envs/worker.env
+    volumes:
+      - ./abrenet_worker:/app
+      - ./api:/app/api:or
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - kafka
+      - mongo
+    restart: unless-stopped
+    networks:
+      - kafka_net
+      - backend_abrenet
+
+networks:
+  web_abrenet:
+    name: web_abrenet
+    driver: bridge
+  backend_abrenet:
+    name: backend_abrenet
+    driver: bridge
+  kafka_net:
+    name: kafka_net
+    driver: bridge

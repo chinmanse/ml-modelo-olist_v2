@@ -25,3 +25,12 @@ proyecto\Scripts\activate
 ```bash
 pip install -r requirements.txt
 ```
+
+# Docker
+
+Para simular el registro de eventa vamos a usar kafka, por lo que para crear las imagenes necesarias se debe seguir los siguientes comandos
+
+```bash
+docker build . -f compose/local/worker/Dockerfile -t ml_worker
+```
+
