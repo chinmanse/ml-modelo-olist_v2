@@ -1,0 +1,23 @@
+# Imagen base con ruedas precompiladas para evitar compilaciones largas
+FROM python:3.11-bullseye
+
+# Establecer directorio de trabajo
+WORKDIR /app
+
+# Copiar requirements
+COPY client_streamlit/requirements.txt .
+
+# Actualizar pip y instalar wheel
+RUN pip install --upgrade pip setuptools wheel
+
+# Instalar dependencias desde wheels
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copiar todo el cliente
+COPY client_streamlit/ .
+
+# Exponer puerto de Streamlit
+EXPOSE 8501
+
+# Comando para correr Streamlit
+CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
